@@ -208,6 +208,30 @@ add_tax = -> p { p * 1.2 }
 
 modify_prices(prices, &add_tax)
 
+# pass block of code or use Proc as seen in most of the metaprogrmming..
+def modify_prices(prices, &block)
+    prices.each do |p|
+      block[p] if block_given?
+    end
+end
+
+#no block passed
+modify_prices([23,67,88]) 
+
+#block passed
+modify_prices([23,67,88]) do |p|
+    puts  p**2
+end
+
+#Proc object is passed instead of block.
+adder = Proc.new do |num|
+    puts num + 23
+end
+
+#note special "&" before to Proc object to derefernce 
+modify_prices([23,67,88], &adder)
+
+
 #There is a special to_proc method defined on symbols that converts
 # symbols to proc
 p :even?.to_proc
