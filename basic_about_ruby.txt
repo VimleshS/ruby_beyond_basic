@@ -1,0 +1,240 @@
+Difference between class and class instance variable
+	A class variable (@@) is shared among the class and all of its descendants. 
+	A class instance variable (@) is not shared by the class's descendants.
+
+Private scope works little different in ruby
+	- The private method cant be called with a explicit object receiver
+	- so, i cant write ship.my_priv_method
+	- explaination, as like all other methods private methods are also 
+	  inherrited by child class, as we are calling from the context of 
+	  subclass we dont need to specify a explicit receiver, that is why 
+	  it works.
+	
+
+In ruby every thing is a expression
+	True or False
+	- Only false and nil evaluates to false
+	- Everything else is true, true, 0, empty string, empty arrays.. etc
+	
+	
+Parallel Assignment works in conjunction with splat operators
+   (to/from array using *)
+   (array parameters)
+   
+   a,*b, c = 1,2,3,4,5  # a= 1, b = [2,3,4], c = 5 
+      #Splat works is a greedy manner
+   
+   a,*b = 1,2,3,4,5     # a= 1, b = [2,3,4,5]
+   a,_,_,*b = 1,2,3,4,5  # a= 1, b = [4,5]
+   
+Splat on right side
+	
+	a,b,c = *1..3 # a =1, b=2,c=3
+	a,*,c = 1,2,*[3,4,5,6] # c= 6
+	
+Splat also works on hashes
+
+   h = {one: 1, two: 2}
+   [*h] # [[one:, 1], [two:, 2]]
+
+
+Splat operator works on any class that implements that to_a method
+
+
+Methods in ruby
+	- Default method values
+		
+		def produce_spacecreaft(type = :freighter, size = :x1)
+		  #...
+		end
+	
+		def produce_spacecreaft(type = :freighter, 
+						        size = calc_default_size(type))
+		  #...
+		end
+ 
+		def produce_spacecreaft(type = :freighter, 
+		                        size = (type == :freighter ? :x1 : :m))
+		  #...
+		end
+	
+
+		def produce_spacecreaft(type = :freighter, size = :x1, name)
+		  #...
+		end
+		produce_spacecreaft('myname') # default first
+	
+	- Variable numbers of arguments in conjunction with splat operator
+		
+		def produce_spacecreaft(days_to_complete, *types)
+		
+		produce_spacecreaft(10, :freighter, :explorer, :wanderer)
+		      days_to_complete  |------------types-------------|         
+		
+		
+	    ship_types = [:freighter, :explorer, :wanderer]
+	    produce_fleet(15, *ship_types)
+	
+	-Keyword Arguments
+		
+		When method parameter multiply the code can easily become hard 
+		to understand.When there is more than one argument its not
+		obivious what each one of them represent,therefore ruby has Keyword 
+		arguments
+	
+	
+		def produce_spacecreaft(type: :freighter, size: :x1, fuel_tank_volume: 400, engine_count: 2)
+		  #...
+		end
+		
+		#call
+		produce_spacecreaft(type: :freighter, size: :m1, fuel_tank_volume:400, engine_count: 3)
+		
+		They can co-exsit with a regular arguments, but regular arguments
+		have to be first
+		
+		If we try to pass a method some keyword arguments which aren't 
+		in its defination, we will get an error.
+		Solution to this is add a double splat parameter to the end of the
+		parameter list, this will collect all any keyword arguments which
+		weren't explicitly listed in the defination
+		
+		def produce_spacecreaft(type: :freighter, size: :x1, **custom_components)
+		  
+		  component = { engine: :standard,
+                    seats:  standard,
+                    subwoofer: none }
+						
+          component.merge!(custom_components) #merges and overrides the 
+                                              #keys present in component
+     	end
+     	
+     	produce_spacecreaft(:yacth,size: :s,
+     	                    engine: :rolls_royace, seats: :leather)
+	
+		# OR
+        build_params= {engine: :rolls_royace, seats: :leather}
+        
+        produce_spacecreaft(:yacth, build_params)
+        
+        #OR
+        simillarly to use a splat operator to splice array elements into
+        the argument list we can use double splat operator so that ruby 
+        creates a variable it applies to as a hash and combine with any 
+        other keyword arguments
+        
+        custom_components = { seats: :leather}
+        
+        produce_spacecreaft(:yacth, size: :m, **custom_components)
+        
+		
+        
+Block, Constanst and module
+
+		Block are methods which are called with yield keyword and have a
+		receive a returun value from a block. Block arguments are simillar
+		to method arguments they can have
+			- Default arguments
+			- Keyword arguments
+			- Array arguments (with a splat)
+			
+		# All in one example	
+
+		def produce 
+		  yield :spaceship, :freighter, :yacth, size: :s, seats: :leather
+		end
+		
+		
+		produce do |what = :spaceship, *types, size: :m, engine_count: 2, **custom_components |
+		  puts "Producing #{what}"
+		  print "Types:  "
+		  p types
+		  puts "Size: #{size}"  
+		  puts "Engine count #{engine_count}"
+		  print "Custom component"
+		  p custom_components
+		end
+			
+			
+		Blocks are almost a closure, Block carry their own context, includes
+		local variable, class variable, constant and self.
+		
+		A return from block, returns from the scope where block is defined.	
+			
+        $debug = true
+        
+        def debug_only
+          yield if $debug && block_given?
+        end
+        
+        class Spaceship
+          def initialize
+            @debug_attrs = {containment_status: :ok, core_temp: 350}
+          end
+        
+          def launch
+            debug_only { p @debug_attrs } #this will works only bcoz block
+                                          #is defined in the scope/context 
+                                          #of a class and has access to 
+                                          #instance variable
+          end
+        end
+        
+        Spaceship.new.launch
+			
+		ship = Spaceship.new("Dread")	    # Exception will be raised as context is main 
+		ship.debug_only do |attr|           # return from the 
+      return if ship.name != "Serenity" 
+		end	
+			
+			
+	&block  => '&' always differentiate between block and normal parameter.
+
+    #generally when we use &block in parameter then mostly intention is to 
+    #propage the block to other methods.
+    
+    def caller(&b)
+      call(&b)
+    end	
+    
+    def call 
+      puts ""
+      yield
+      puts ""
+    end  
+    
+    caller do
+      print "...do nothing..."
+    end  
+
+	Procs can always be converted to block		
+	 p = Proc.new {p "----proc----"}
+	 
+	 caller(p) # will not work here we passing p as a argument in this case
+	           # we have to call it as p.call, p[], p.yield, p.()
+	           #however, to use it as a block pass it as &p
+	 
+	 caller(&p) #in this case ruby inserts a coares the object into a 
+	            #proc, if isn't a already proc & it does that by calling
+	            #a to_proc method on a object
+	            
+	  ["one", "two"].map(&:upcase)
+	  
+	  ~= u = :upcase.to_proc
+	     u.call('ss')
+	     u['ss'] 
+	 
+	 - A Word about arguments
+	     Proc & block are not strict about arguments they discard or set nil
+	     for extra and missing
+	     
+	     lambda raises and exception arguments mismatch.
+	 
+     -Caution abou using return, break.
+	 
+	     Proc: return is executed in the scope where it is defined
+	     Proc: break isn't allowed outside a loop
+	     
+	     
+	     Lambda: break and return both returns to the caller.It behaves 
+				much like a method
