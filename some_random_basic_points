@@ -1,0 +1,163 @@
+@@ # shared across class and instance 
+Class var (
+     MyClass.instance_variables/
+     MyClass.instance_variable_get(:@class_var)
+     MyClass.instance_variable_set(:@class_var, 2)
+)
+@ # accessible only by class
+Class instance variable (
+     MyClass.new.instance_variables
+)
+
+class Demo
+   @@class_var
+   @class_int_var
+    def do_something
+      # accesible only by class instance
+       @inst-var
+    end
+end
+
+
+Encapsulation:
+In ruby instance variable are always private a wonderful example of data hiding
+
+Str.reverse! # does not create a new variable it mutates the original one so  that the object_id remain same.
+
+Recover from error:
+
+begin
+rescue
+else
+ensure
+End
+
+raise
+
+$!  = is the global constant which ruby assigns last exception
+
+
+
+
+Block => Nameless method
+
+Differences?
+{} / do-end have a different precedence just like || or , && and
+
+{} have a higher precedence, generally reflects in-nested calls
+ 
+⇒ foo bar do |s| puts( s ) end
+
+# the above is equivalent to
+# foo( bar ) do |s| puts( s ) end
+#    or
+# foo( bar ) { |s| puts(s) }
+
+⇒ foo bar{ |s| puts(s) }
+
+# the above is equivalent to
+# foo(bar{ |s| puts(s) })
+#    or
+# foo( bar do |s| puts( s ) end )
+
+
+Symbol ⇒ is a pointer to the ruby internal symbol tables.
+To see all symbols at any point in time is
+⇒ Symbol.all_symbols # which is an array
+⇒ :hellovimlesh
+⇒ Symbol.all_symbols.index(:hellovimlesh) # returns the index
+⇒ Symbol.all_symbols[16754]
+
+Keywords arguments are placeholders for a formal arguments, they are not based on hash, however when called with hash ruby implicitly coarse hash values into argument keywords.
+
+
+Nesting of modules and class
+#Module with a class and class with module
+module M
+  class C
+    def c_p
+      "c_p"
+    end  
+    module CM
+      def cm_cm
+        "sdsd"
+      end  
+    end  
+  end  
+end  
+
+#Include module
+class D
+  include M::C::CM  
+end 
+
+#Call
+D.new.cm_cm
+
+
+
+# Nested Module 
+module NN
+  def hello
+    "ssdsd"
+  end  
+end  
+=> :hello
+module NNN
+  include NN
+end  
+=> NNN
+class Newn
+  include NNN
+end  
+=> Newn
+Newn.new.hello
+=> "ssdsd"
+
+To differentiate between same method in multiple module use alias 
+
+There are two ways to save object and restore
+(1)
+Yaml yet another markup language, used for serializing data
+
+require “yaml”
+
+s = ['Bert', 'Fred', 'Mary'].to_yaml
+H = YAML.load(s)
+---       #--- indicates the start of doc
+- Bert    # -  indicates the start of doc 
+- Fred
+- Mary
+
+To limit attribute for dump use custom prop
+def to_yaml_property
+end
+
+(2)
+Marshal it uses binary serialization
+f = File.open("./ttt", "w+")
+Marshal.dump( obj, f)
+
+f = File.open("./ttt", "r")
+Data = Marshal.load( f)
+
+To limit attribute for dump use custom prop
+def marshal_dump
+end
+
+There is equivalent to assign values using
+def marshal_load
+end
+
+Metaprogramming
+⇒ “#{}”
+⇒ eval
+⇒ obj.instance_eval # operates on instance
+⇒ module_eval       # operates on module
+⇒ class_eval        # operates on class
+E.q
+  String::class_eval{define_method(:bye){puts “goodbye”}}
+
+
+
+
